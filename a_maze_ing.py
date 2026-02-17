@@ -1,7 +1,7 @@
 import sys 
 import os
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Optional, List, Dict, Any
 from mazegen.generator import MazeGenerator
 import random
 import time
@@ -96,49 +96,47 @@ def convert(data: dict)-> Config:
         sys.exit(1)
 
 
-# def path_to_cardinal(path):
-#     if not path or len(path) < 2:
-#         return ""
-    
-#     directions = ""
-#     for i in range(len(path) - 1):
-#         curr_x, curr_y = path[i]
-#         next_x, next_y = path[i+1]
-        
-#         if next_y < curr_y: directions += "N"
-#         elif next_x > curr_x: directions += "E"
-#         elif next_y > curr_y: directions += "S"
-#         elif next_x < curr_x: directions += "W"
-        
-#     return directions
-
-def render_maze(grid, width, height, entry, exit, seed_value, path=None):
+def render_maze(grid, width, height, entry, exit, seed_value, rotate, path=None):
     """
-    Rendu "Pixel Perfect" : Pas de bavures, départ/arrivée bien isolés.
+    Rendu propre : 42 Violet, mais liaisons standards (Vertes) pour éviter les bavures.
     """
-    RESET = "\033[00m"
-    BG_WALL  = "\033[45m"
-    BG_EMPTY =  "\033[107m"
-    BG_PATH  = "\033[42m"
-    BG_ENTRY = "\033[104m"
-    BG_EXIT  = "\033[41m"
-    BG_42    = "\033[100m"
+    if rotate == False:
+        RESET = "\033[00m"
+        BG_WALL  = "\033[45m"       # Magenta
+        BG_EMPTY = "\033[107m"      # Blanc
+        BG_PATH  = "\033[42m"       # Vert
+        BG_ENTRY = "\033[104m"      # Bleu
+        BG_EXIT  = "\033[41m"       # Rouge
+        BG_42    = "\033[48;5;93m"  # Violet (Code couleur étendu)
 
-    BLK_WALL  = f"{BG_WALL}  {RESET}"
-    BLK_EMPTY = f"{BG_EMPTY}  {RESET}"
-    BLK_PATH  = f"{BG_PATH}  {RESET}"
-    
-    # Optimisation : On transforme la liste en set pour des recherches instantanées
+        BLK_WALL  = f"{BG_WALL}  {RESET}"
+        BLK_EMPTY = f"{BG_EMPTY}  {RESET}"
+        BLK_PATH  = f"{BG_PATH}  {RESET}"
+        BLK_ENTRY = f"{BG_ENTRY}  {RESET}"
+        BLK_EXIT  = f"{BG_EXIT}  {RESET}"
+        BLK_42    = f"{BG_42}  {RESET}" 
+    else:
+        RESET = "\033[00m"
+        BG_WALL  = "\033[40m"
+        BG_EMPTY = "\033[100m"
+        BG_PATH  = "\033[42m"
+        BG_ENTRY = "\033[104m"
+        BG_EXIT  = "\033[43m"
+        BG_42    = "\033[41m"
+
+        BLK_WALL  = f"{BG_WALL}  {RESET}"
+        BLK_EMPTY = f"{BG_EMPTY}  {RESET}"
+        BLK_PATH  = f"{BG_PATH}  {RESET}"
+        BLK_ENTRY = f"{BG_ENTRY}  {RESET}"
+        BLK_EXIT  = f"{BG_EXIT}  {RESET}"
+        BLK_42    = f"{BG_42}  {RESET}" 
+
     path_set = set(path) if path else set()
-    
-    # On s'assure que Start et End sont considérés comme "faisant partie du chemin"
-    # pour que les liaisons se fassent bien
     if path:
         path_set.add(entry)
         path_set.add(exit)
 
     print(f"\nDimensions: {width}x{height}, seed: {seed_value}")
-    
     # Bordure du haut
     print(BLK_WALL + (BLK_WALL * 2) * width)
 
@@ -148,17 +146,17 @@ def render_maze(grid, width, height, entry, exit, seed_value, path=None):
 
         for x in range(width):
             val = grid[y][x]
+            is_42 = (val == 15)
             
             # 1. COULEUR DU BLOC CENTRAL
             if (x, y) == entry:
-                # On force le bloc Entry en vert
-                center_color = f"{BG_ENTRY}  {RESET}"
+                center_color = BLK_ENTRY
             elif (x, y) == exit:
-                center_color = f"{BG_EXIT}  {RESET}"
+                center_color = BLK_EXIT
             elif (x, y) in path_set:
                 center_color = BLK_PATH
-            elif val == 15:
-                center_color = f"{BG_42}  {RESET}"
+            elif is_42:
+                center_color = BLK_42
             else:
                 center_color = BLK_EMPTY
 
@@ -166,9 +164,13 @@ def render_maze(grid, width, height, entry, exit, seed_value, path=None):
 
             # 2. LIAISON EST (Droite)
             if (val & 2) != 0: # Mur fermé
-                line_body += BLK_WALL
+                if is_42:
+                    line_body += BLK_42 # Mur violet pour le 42
+                else:
+                    line_body += BLK_WALL
             else: # Mur ouvert
-                # INTELLIGENCE ICI : On ne met du bleu que si les DEUX sont sur le chemin
+                # Logique simple : Si les deux sont sur le chemin = VERT
+                # Pas de bavure bleue ou rouge
                 if (x, y) in path_set and (x + 1, y) in path_set:
                     line_body += BLK_PATH
                 else:
@@ -176,22 +178,26 @@ def render_maze(grid, width, height, entry, exit, seed_value, path=None):
 
             # 3. LIAISON SUD (Bas)
             if (val & 4) != 0: # Mur fermé
-                line_bottom += BLK_WALL
+                if is_42:
+                    line_bottom += BLK_42 # Mur violet pour le 42
+                else:
+                    line_bottom += BLK_WALL
             else: # Mur ouvert
-                # INTELLIGENCE ICI : Idem, on vérifie le voisin du bas
+                # Logique simple : Si les deux sont sur le chemin = VERT
                 if (x, y) in path_set and (x, y + 1) in path_set:
                     line_bottom += BLK_PATH
                 else:
                     line_bottom += BLK_EMPTY
 
-            # Coin (toujours un mur pour la structure)
-            line_bottom += BLK_WALL
+            # 4. COIN
+            # Coin violet si on est dans le 42 pour un aspect "bloc"
+            if is_42:
+                line_bottom += BLK_42
+            else:
+                line_bottom += BLK_WALL
 
         print(line_body)
         print(line_bottom)
-
-
-
 
 def main():
 
@@ -205,7 +211,8 @@ def main():
         print("Usage: python3 a_maze_ing.py config.txt")
         sys.exit(1)
 
-    show_path = True 
+    show_path = True
+    rotate = False
     if config.seed is not None:
         seed_value = (config.seed)
     else:
@@ -217,23 +224,25 @@ def main():
     maze.generate_maze(config.entry, config.exit, config.perfect)
     print(f"Saving to {config.output_file}...")
     path = maze.solve_maze(config.width, config.height, config.entry, config.exit)
-    maze.save_maze(config.output_file, path)
+
+    maze.save_maze(config.output_file, path, config.entry, config.exit)
     
     # print(f"DONE! Solution found with {len(path)} steps.")
-    render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, path if show_path else None)
+    render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, rotate, path if show_path else None)
 
     while True:
 
         print("======== A-Maze-ing ========" )
         print("1. Re-generate a new maze")
         print("2. Show/Hide path from entry to exit")
-        print("3. Quit")
+        print("3. Rotate maze colors")
+        print("4. Quit")
         try:  
-            choice = int(input("Choice (1-3): "))
+            choice = int(input("Choice (1-4): "))
         except Exception as e:
             print (f"Error: invalid input.")
             continue
-
+   
         if choice == 1:
             if config.seed is not None:
                 random.seed(config.seed)
@@ -244,16 +253,24 @@ def main():
             path = maze.solve_maze(config.width, config.height, config.entry, config.exit)
             render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, path if show_path else None)
             print(f"Saving to {config.output_file}...\n")
-            maze.save_maze(config.output_file, path)
-       
+            maze.save_maze(config.output_file, path, config.entry, config.exit)
+        if choice == 42:
+            easter_egg_42()
         if choice == 2:
             if show_path == True:
                 show_path = False
             elif show_path == False:
                 show_path = True
-            render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, path if show_path else None)
+            render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, rotate, path if show_path else None)
 
         if choice == 3:
+            if rotate == True:
+                rotate = False
+            elif rotate == False:
+                rotate = True
+            render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, rotate, path if show_path else None)
+
+        if choice == 4:
             return
 
 

@@ -148,7 +148,7 @@ class MazeGenerator:
         return directions
 
 
-    def save_maze(self, filename, path):
+    def save_maze(self, filename, path, entry, exit):
 
         try:
             with open(filename, "w") as f:
@@ -163,7 +163,10 @@ class MazeGenerator:
                     # Line finished we add it and pass to the next row
                     f.write(line_text + "\n")
                 path_str = self.path_to_cardinal(path)
-                f.write("\n" + path_str)
+                
+                f.write(f"\n{entry[0]},{entry[1]}\n")
+                f.write(f"{exit[0]},{exit[1]}\n")
+                f.write(path_str)
         except Exception as e:
             print(f"Writing error : {e}")
 
