@@ -87,7 +87,6 @@ class MazeGenerator:
                 new_line.append(15)
             self.grid.append(new_line)
 
-        # On remet tous les visités à False
         self.visited = []
         for y in range(self.height):
             line_visited = []
@@ -95,7 +94,7 @@ class MazeGenerator:
                 line_visited.append(False)
             self.visited.append(line_visited)
             
-        self.path = [] # On vide le chemin
+        self.path = []
 
 
         self.draw42(entry, exit)
@@ -132,7 +131,24 @@ class MazeGenerator:
         if not perfect:
             self.imperfect()
 
-    def save_maze(self, filename):
+
+    def path_to_cardinal(self, path):
+        if not path or len(path) < 2:
+            return ""
+        
+        directions = ""
+        for i in range(len(path) - 1):
+            curr_x, curr_y = path[i]
+            next_x, next_y = path[i+1]
+            
+            if next_y < curr_y: directions += "N"
+            elif next_x > curr_x: directions += "E"
+            elif next_y > curr_y: directions += "S"
+            elif next_x < curr_x: directions += "W"
+        return directions
+
+
+    def save_maze(self, filename, path):
 
         try:
             with open(filename, "w") as f:
@@ -146,6 +162,8 @@ class MazeGenerator:
                 
                     # Line finished we add it and pass to the next row
                     f.write(line_text + "\n")
+                path_str = self.path_to_cardinal(path)
+                f.write("\n" + path_str)
         except Exception as e:
             print(f"Writing error : {e}")
 
@@ -156,7 +174,7 @@ class MazeGenerator:
     def draw42(self, entry, exit):
 
         self.pattern = set()
-        if self.height < 16 or self.width < 16:
+        if self.height < 9 or self.width < 9:
             print("Maze too small for the 42 pattern.")
             return
 
@@ -231,3 +249,85 @@ class MazeGenerator:
                         self.grid[random_y][random_x] &= ~south_wall
                         self.grid[random_y + 1][random_x] &= ~north_wall
                         count += 1
+
+
+    def get_neighbors(self, width, height, x, y):
+        possible = []
+        
+        value = self.grid[y][x]
+
+        # North
+        if y > 0 and (value & 1) == 0:
+            possible.append((x, y - 1))
+
+        # South
+        if y < height - 1 and (value & 4) == 0:
+            possible.append((x, y + 1))
+
+        # East
+        if x < width - 1 and (value & 2) == 0:
+            possible.append((x + 1, y))
+
+        # West
+        if x > 0 and (value & 8) == 0:
+            possible.append((x - 1, y))
+
+        return possible
+
+
+    def solve_maze(self, width, height, start, end):
+
+        map = []
+        for y in range(height):
+            line = []
+            for x in range(width):
+                line.append(-1)
+            map.append(line)
+
+        start_x, start_y = start
+        map[start_y][start_x] = 0
+        queue = [start]
+        resolved = False
+
+        while len(queue) > 0:
+
+            cx, cy = queue.pop(0)
+
+            if (cx, cy) == end:
+                resolved = True
+                break
+
+            neighbors = self.get_neighbors(width, height, cx, cy)
+            for x, y in neighbors:
+                # -1 == not visited
+                if map[y][x] == -1:
+                    map[y][x] = map[cy][cx] + 1
+                    queue.append((x, y))
+        if not resolved:
+            print("No solution found")
+            sys.exit(1)
+
+        # We found the exit, now we need to find the shortest path
+
+        # Start from the end 
+        path = [end]
+        cx, cy = end
+
+        dist = map[cy][cx]
+
+        while dist > 0:
+            neighbors = self.get_neighbors(width, height, cx, cy)
+            found = False
+            for x, y in neighbors:
+                if map[y][x] == dist - 1:
+                    cx, cy = x, y
+                    dist -= 1
+                    path.append((x, y))
+                    found = True
+                    break
+            
+            if not found:
+                break
+
+        # We inverse the path 
+        return path[::-1]

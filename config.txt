@@ -1,8 +1,8 @@
 # Configuration du Labyrinthe
-WIDTH=18
-HEIGHT=18
+WIDTH=9
+HEIGHT=9
 ENTRY=0,0
 EXIT=0,1
 PERFECT=True
 OUTPUT_FILE=maze.txt
-SEED=0
+#SEED=2551449038

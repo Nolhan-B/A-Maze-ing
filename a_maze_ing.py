@@ -3,7 +3,6 @@ import os
 from dataclasses import dataclass
 from typing import Tuple
 from mazegen.generator import MazeGenerator
-from mlx import Mlx
 import random
 import time
 
@@ -97,99 +96,21 @@ def convert(data: dict)-> Config:
         sys.exit(1)
 
 
-
-def solve_maze(grid, width, height, start, end):
-
-    map = []
-    for y in range(height):
-        line = []
-        for x in range(width):
-            line.append(-1)
-        map.append(line)
-
-    start_x, start_y = start
-    map[start_y][start_x] = 0
-    queue = [start]
-    resolved = False
-
-    while len(queue) > 0:
-
-        cx, cy = queue.pop(0)
-
-        if (cx, cy) == end:
-            resolved = True
-            break
-
-        neighbors = get_neighbors(grid, width, height, cx, cy)
-        for x, y in neighbors:
-            # -1 == not visited
-            if map[y][x] == -1:
-                map[y][x] = map[cy][cx] + 1
-                queue.append((x, y))
-    if not resolved:
-        print("No solution found")
-        sys.exit(1)
-
-    # We found the exit, now we need to find the shortest path
-
-    # Start from the end 
-    path = [end]
-    cx, cy = end
-
-    dist = map[cy][cx]
-
-    while dist > 0:
-        neighbors = get_neighbors(grid, width, height, cx, cy)
-
-        for x, y in neighbors:
-                if map[y][x] == dist - 1:
-                    cx, cy = x, y
-                    dist -= 1
-                    path.append((x, y))
-                    break
-
-    # We inverse the path 
-    return path[::-1]
-
-def get_neighbors(grid, width, height, x, y):
-    possible = []
+# def path_to_cardinal(path):
+#     if not path or len(path) < 2:
+#         return ""
     
-    value = grid[y][x]
-
-    # North
-    if y > 0 and (value & 1) == 0:
-        possible.append((x, y - 1))
-
-    # South
-    if y < height - 1 and (value & 4) == 0:
-        possible.append((x, y + 1))
-
-    # East
-    if x < width - 1 and (value & 2) == 0:
-        possible.append((x + 1, y))
-
-    # West
-    if x > 0 and (value & 8) == 0:
-        possible.append((x - 1, y))
-
-    return possible
-
-
-def path_to_cardinal(path):
-    if not path or len(path) < 2:
-        return ""
-    
-    directions = ""
-    for i in range(len(path) - 1):
-        curr_x, curr_y = path[i]
-        next_x, next_y = path[i+1]
+#     directions = ""
+#     for i in range(len(path) - 1):
+#         curr_x, curr_y = path[i]
+#         next_x, next_y = path[i+1]
         
-        if next_y < curr_y: directions += "N"
-        elif next_x > curr_x: directions += "E"
-        elif next_y > curr_y: directions += "S"
-        elif next_x < curr_x: directions += "W"
+#         if next_y < curr_y: directions += "N"
+#         elif next_x > curr_x: directions += "E"
+#         elif next_y > curr_y: directions += "S"
+#         elif next_x < curr_x: directions += "W"
         
-    return directions
+#     return directions
 
 def render_maze(grid, width, height, entry, exit, seed_value, path=None):
     """
@@ -295,9 +216,8 @@ def main():
     start_y = config.entry[1]
     maze.generate_maze(config.entry, config.exit, config.perfect)
     print(f"Saving to {config.output_file}...")
-    path = solve_maze(maze.grid, config.width, config.height, config.entry, config.exit)
-    cardinal = path_to_cardinal(path)
-    maze.save_maze(config.output_file, cardinal)
+    path = maze.solve_maze(config.width, config.height, config.entry, config.exit)
+    maze.save_maze(config.output_file, path)
     
     # print(f"DONE! Solution found with {len(path)} steps.")
     render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, path if show_path else None)
@@ -321,10 +241,10 @@ def main():
                 seed_value = str(random.randint(0, 10000000000))
                 random.seed(seed_value)
             maze.generate_maze(config.entry, config.exit, config.perfect)
-            path = solve_maze(maze.grid, config.width, config.height, config.entry, config.exit)
+            path = maze.solve_maze(config.width, config.height, config.entry, config.exit)
             render_maze(maze.grid, config.width, config.height, config.entry, config.exit, seed_value, path if show_path else None)
             print(f"Saving to {config.output_file}...\n")
-            maze.save_maze(config.output_file)
+            maze.save_maze(config.output_file, path)
        
         if choice == 2:
             if show_path == True:
