@@ -1,11 +1,11 @@
 
-__This project has been created as part of the 42 curriculum by nbarbosa and nbilyj.__
+*__This project has been created as part of the 42 curriculum by nbarbosa and nbilyj.__*
 
 # A-Maze-ing
 
 A-Maze-ing is a maze generator and solver written in Python. This project explores graph theory, procedural generation, and the creation of reusable Python packages. It allows for the generation of perfect or imperfect mazes, solving them via a shortest-path algorithm, and exporting the results in both text and visual formats.
 
-## Description_
+## Description
 
 The program reads a configuration file, generates a maze based on specific constraints (dimensions, start/end points, loops), and produces two main outputs:
 
@@ -18,15 +18,15 @@ The program reads a configuration file, generates a maze based on specific const
 ### Makefile
 
 A Makefile is included to automate common tasks:
+```makefile
+make install: Installs dependencies via pip.
 
-    make install: Installs dependencies via pip.
+make run: Runs the main script with the default configuration.
 
-    make run: Runs the main script with the default configuration.
+make lint: Checks code quality (Flake8 and strict MyPy).
 
-    make lint: Checks code quality (Flake8 and strict MyPy).
-
-    make clean: Removes temporary files and caches.
-
+make clean: Removes temporary files and caches.
+```
 ### Manual Execution
 
 To run the generator with a specific config file:
@@ -38,18 +38,20 @@ python3 a_maze_ing.py config.txt
 The configuration file (config.txt) defines the maze parameters using a KEY=VALUE format.  
 Lines starting with # are ignored.  
 
-Key	Description	Example	Required  
-WIDTH	Maze width (cells):						WIDTH=20  
-HEIGHT	Maze height (cells):					HEIGHT=15  
-ENTRY	Start coordinates (x,y):				ENTRY=0,0  
-EXIT	End coordinates (x,y):					EXIT=19,14  
-PERFECT	True for unique path, False for loops:	PERFECT=True  
-OUTPUT_FILE	Output text filename:				OUTPUT_FILE=maze.txt  
-SEED Random generation seed: 					SEED=123456    
-Algorithms
-Generation: Recursive Backtracker (DFS)
+##### Key Description Example Required  
+WIDTH	Maze width (cells):						__WIDTH=20__  
+HEIGHT	Maze height (cells):					__HEIGHT=15__  
+ENTRY	Start coordinates (x,y):				__ENTRY=0,0__  
+EXIT	End coordinates (x,y):					__EXIT=19,14__  
+PERFECT	True for unique path, False for loops:	__PERFECT=True__  
+OUTPUT_FILE	Output text filename:				__OUTPUT_FILE=output_maze.txt__  
+SEED Random generation seed: 					__SEED=123456__    
 
-I chose the Recursive Backtracker algorithm.
+### Algorithms
+
+__Generation: Recursive Backtracker (DFS)__
+
+    I chose the Recursive Backtracker algorithm.
 
     Aesthetics: Produces long, winding corridors with a low "river factor," making it harder for humans to solve.
 
@@ -57,13 +59,14 @@ I chose the Recursive Backtracker algorithm.
 
     Implementation: Efficiently implemented using a standard stack structure.
 
-Solver: Breadth-First Search (BFS)
+__Solver: Breadth-First Search (BFS)__
 
-I used BFS for the solver.
+    I used BFS for the solver.
 
     Reasoning: Unlike DFS, which just finds a path, BFS guarantees finding the shortest path in an unweighted grid, which is a requirement for the optimal solution output.
+<img src="preview.png" alt="Preview of the solving algorithms" width="400"/>
 
-Code Reusability
+#### Code Reusability
 
 The core generation logic is encapsulated in the mazegen package located at the root. This module is standalone and designed to be imported into other projects. It can be built (wheel/tar.gz) using standard tools.
 
@@ -74,13 +77,13 @@ Python
 
 from mazegen.generator import MazeGenerator
 
-# 1. Instantiate
+#### 1. Instantiate
 maze = MazeGenerator(width=20, height=20)
 
-# 2. Generate (Start at 0,0, End at 19,19, Perfect maze)
+#### 2. Generate (Start at 0,0, End at 19,19, Perfect maze)
 maze.generate_maze(entry=(0, 0), exit=(19, 19), perfect=True)
 
-# 3. Access structure
+#### 3. Access structure
 print(maze.grid) 
 
 # 4. Solve
@@ -98,6 +101,10 @@ Project Info
 
     Author: nbarbosa, nbilyj
 
+    nbarbosa: Parsing, maze algorythm, readme, Makefile.
+    nbilyj: Visualiser, package creation, refactoring, maze resolution.
+    Both members collaborated on all parts via pair-programming.
+
     QA Tools: Flake8, MyPy (strict).
 
 Development Phases:
@@ -108,24 +115,34 @@ Development Phases:
 
     "42" pattern integration & Hex output compliance.
 
+    Terminal Rendering of the maze.
+
     Refactoring into mazegen package & PEP8 cleanup.
+
+    Include docstrings to the code.
+
+Retrospective:
+
+    What worked: The use of dataclasses for configuration simplified the code significantly.
+
+    To improve: A GUI using MLX would have been a nice addition compared to the terminal render.
 
 ## Resources
 
 References:
 
-    Mazes for Programmers by Jamis Buck.
+https://www.geeksforgeeks.org/dsa/rat-in-a-maze-backtracking-using-stack/
 
+https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker
 
+https://discuss.python.org/t/maze-creation-in-python/77030/2
 
 AI Usage:
 
 
     Debugging complex MyPy strict typing errors.
 
-    Mathematical optimization for image rendering (pixel coordinate calculations).
-
-    Clarifying distinctions between generation neighbors and solution neighbors.
+    Documentation & Layout: Assistance in structuring the README, formatting Markdown code blocks.
 
     Generating ASCII assets.
 

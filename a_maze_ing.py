@@ -110,10 +110,7 @@ def render_maze(grid: List[List[int]], width: int, height: int,
                 entry: Tuple[int, int], exit: Tuple[int, int],
                 seed_value: str, rotate: bool,
                 path: Optional[List[Tuple[int, int]]] = None) -> None:
-    """
-    Rendu propre : 42 Violet, mais liaisons standards (Vertes) pour
-    éviter les bavures.
-    """
+
     if not rotate:
         RESET = "\033[00m"
         BG_WALL = "\033[45m"       # Magenta
