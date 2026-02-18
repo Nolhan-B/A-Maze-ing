@@ -265,36 +265,40 @@ def main() -> None:
         print("1. Re-generate a new maze")
         print("2. Show/Hide path from entry to exit")
         print("3. Rotate maze colors")
-        print("4. Quit")
+        print("4. On/Off Animation")
+        print("5. Quit")
         try:
-            choice = (input("Choice (1-4): "))
+            choice = (input("Choice (1-5): "))
         except Exception:
             print("Error: invalid input.")
             continue
 
         if choice == "1":
-            if config.seed is not None:
-                random.seed(config.seed)
+            user_seed = input("Enter seed (Press Enter for random): ").strip()
+
+            if user_seed:
+                seed_value = user_seed
             else:
                 seed_value = str(random.randint(0, 10000000000))
-                random.seed(seed_value)
-                if (config.animation_wg is True):
-                    for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
-                        render_maze(maze.grid, config.width, config.height,
-                                config.entry, config.exit, seed_value,
-                                rotate)
-                        print("\033[H\033[J", end="")
-                        time.sleep(0.01)
-                else:
-                    maze.generate_maze(config.entry, config.exit, config.perfect)
-            print(f"Saving to {config.output_file}...")
-            path = maze.solve_maze(config.width, config.height,
-                                config.entry, config.exit)
-            render_maze(maze.grid, config.width, config.height,
-                        config.entry, config.exit, seed_value,
-                        rotate, path if show_path else None)
+            
+            random.seed(seed_value)
+            if (config.animation_wg is True):
+                for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
+                    render_maze(maze.grid, config.width, config.height,
+                            config.entry, config.exit, seed_value,
+                            rotate)
+                    print("\033[H\033[J", end="")
+                    time.sleep(0.01)
+            else:
+                maze.generate_maze(config.entry, config.exit, config.perfect)
+        print(f"Saving to {config.output_file}...")
+        path = maze.solve_maze(config.width, config.height,
+                            config.entry, config.exit)
+        render_maze(maze.grid, config.width, config.height,
+                    config.entry, config.exit, seed_value,
+                    rotate, path if show_path else None)
 
-            maze.save_maze(config.output_file, path, config.entry, config.exit)
+        maze.save_maze(config.output_file, path, config.entry, config.exit)
 
         if choice == "2":
             if show_path:
@@ -313,8 +317,16 @@ def main() -> None:
             render_maze(maze.grid, config.width, config.height,
                         config.entry, config.exit, seed_value,
                         rotate, path if show_path else None)
-
+        
         if choice == "4":
+            if config.animation_wg:
+                config.animation_wg = False
+            elif not config.animation_wg:
+                config.animation_wg = True
+            print("\n" * 2)
+
+        if choice == "5":
+            print("Good Bye!")
             return
 
 

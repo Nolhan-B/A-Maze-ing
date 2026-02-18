@@ -97,6 +97,7 @@ class MazeGenerator:
                       perfect: bool) -> None:
         """
         Generate a maze using the Recursive Backtracker algorithm.
+        With a generator to allow animation during rendering.
         """
         # Add the starting point to the visited area
         self.grid = []
