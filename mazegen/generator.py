@@ -1,6 +1,6 @@
 import random
 import sys
-from typing import List, Tuple, Set
+from typing import List, Tuple, Set, Generator
 
 
 class MazeGenerator:
@@ -430,3 +430,69 @@ class MazeGenerator:
 
         # We inverse the path
         return path[::-1]
+
+    def solve_maze_steps(self, width: int, height: int, start: Tuple[int, int],
+                   end: Tuple[int, int]
+                   ) -> Generator[List[Tuple[int, int]], None, None]:
+        """
+        Find the shortest path using Breadth-First Search (BFS).
+        """
+
+        map: List[List[int]] = []
+        for y in range(height):
+            line: List[int] = []
+            for x in range(width):
+                line.append(-1)
+            map.append(line)
+
+        start_x, start_y = start
+        map[start_y][start_x] = 0
+        queue = [start]
+        resolved = False
+
+        while len(queue) > 0:
+
+            cx, cy = queue.pop(0)
+
+            if (cx, cy) == end:
+                resolved = True
+                break
+
+            neighbors = self.get_neighbors(width, height, cx, cy)
+            for x, y in neighbors:
+                # -1 == not visited
+                if map[y][x] == -1:
+                    map[y][x] = map[cy][cx] + 1
+                    queue.append((x, y))
+        if not resolved:
+            print("No solution found")
+            sys.exit(1)
+
+        # We found the exit, now we need to find the shortest path
+
+        # Start from the end
+        path = [end]
+        cx, cy = end
+
+        dist = map[cy][cx]
+
+        while dist > 0:
+            neighbors = self.get_neighbors(width, height, cx, cy)
+            found = False
+            for x, y in neighbors:
+                if map[y][x] == dist - 1:
+                    cx, cy = x, y
+                    dist -= 1
+                    path.append((x, y))
+                    found = True
+                    break
+
+            if not found:
+                break
+
+        # We inverse the path
+        final_path = path[::-1]
+
+        for i in range(1, len(final_path) + 1):
+            yield final_path[:i]
+

@@ -17,7 +17,8 @@ class Config:
     perfect: bool
     output_file: str
     seed: Optional[str] = None
-    animation_wg: Optional[bool] = False
+    animation_dig: Optional[bool] = False
+    animation_path: Optional[bool] = False
 
 
 def parse_config(file_name: str) -> Config:
@@ -103,11 +104,14 @@ def convert(data: Dict[str, str]) -> Config:
         perfect = data["PERFECT"].lower() == "true"
         output_file = data["OUTPUT_FILE"]
         seed = data.get("SEED")
-        animation_wg = data.get("ANIMATION_WG")
-        if animation_wg is not None:
-            animation_wg = animation_wg.lower() == "true"
+        animation_dig = data.get("ANIMATION_DIG")
+        if animation_dig is not None:
+            animation_dig = animation_dig.lower() == "true"
+        animation_path = data.get("ANIMATION_PATH")
+        if animation_path is not None:
+            animation_path = animation_path.lower() == "true"
         return Config(width, height, entry, exit_coord,
-                      perfect, output_file, seed, animation_wg)
+                      perfect, output_file, seed, animation_dig, animation_path)
 
     except Exception as e:
         print(f"Error: {type(e).__name__} - {e}")
@@ -238,7 +242,7 @@ def main() -> None:
         seed_value = str(random.randint(0, 10000000000))
     random.seed(seed_value)
     maze = MazeGenerator(config.width, config.height)
-    if (config.animation_wg is True):
+    if (config.animation_dig is True):
         for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
             render_maze(maze.grid, config.width, config.height,
                     config.entry, config.exit, seed_value,
@@ -249,8 +253,34 @@ def main() -> None:
         maze.generate_maze(config.entry, config.exit, config.perfect)
 
     print(f"Saving to {config.output_file}...")
-    path = maze.solve_maze(config.width, config.height,
-                           config.entry, config.exit)
+    if config.animation_path:
+        path = []
+        for step_path in maze.solve_maze_steps(
+            config.width,
+            config.height,
+            config.entry,
+            config.exit
+        ):
+            render_maze(
+                maze.grid,
+                config.width,
+                config.height,
+                config.entry,
+                config.exit,
+                seed_value,
+                rotate,
+                step_path
+            )
+            print("\033[H\033[J", end="")
+            time.sleep(0.1)
+            path = step_path
+    else:
+        path = maze.solve_maze(
+            config.width,
+            config.height,
+            config.entry,
+            config.exit
+        )
 
     maze.save_maze(config.output_file, path, config.entry, config.exit)
 
@@ -265,10 +295,11 @@ def main() -> None:
         print("1. Re-generate a new maze")
         print("2. Show/Hide path from entry to exit")
         print("3. Rotate maze colors")
-        print("4. On/Off Animation")
-        print("5. Quit")
+        print("4. On/Off Dig animation")
+        print("5. On/Off Path animation")
+        print("6. Quit")
         try:
-            choice = (input("Choice (1-5): "))
+            choice = (input("Choice (1-6): "))
         except Exception:
             print("Error: invalid input.")
             continue
@@ -282,7 +313,7 @@ def main() -> None:
                 seed_value = str(random.randint(0, 10000000000))
             
             random.seed(seed_value)
-            if (config.animation_wg is True):
+            if (config.animation_dig is True):
                 for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
                     render_maze(maze.grid, config.width, config.height,
                             config.entry, config.exit, seed_value,
@@ -291,12 +322,38 @@ def main() -> None:
                     time.sleep(0.01)
             else:
                 maze.generate_maze(config.entry, config.exit, config.perfect)
-        print(f"Saving to {config.output_file}...")
-        path = maze.solve_maze(config.width, config.height,
-                            config.entry, config.exit)
-        render_maze(maze.grid, config.width, config.height,
-                    config.entry, config.exit, seed_value,
-                    rotate, path if show_path else None)
+            print(f"Saving to {config.output_file}...")
+            if config.animation_path:
+                path = []
+                for step_path in maze.solve_maze_steps(
+                    config.width,
+                    config.height,
+                    config.entry,
+                    config.exit
+                ):
+                    render_maze(
+                        maze.grid,
+                        config.width,
+                        config.height,
+                        config.entry,
+                        config.exit,
+                        seed_value,
+                        rotate,
+                        step_path
+                    )
+                    print("\033[H\033[J", end="")
+                    time.sleep(0.1)
+                    path = step_path
+            else:
+                path = maze.solve_maze(
+                    config.width,
+                    config.height,
+                    config.entry,
+                    config.exit
+                )
+            render_maze(maze.grid, config.width, config.height,
+                        config.entry, config.exit, seed_value,
+                        rotate, path if show_path else None)
 
         maze.save_maze(config.output_file, path, config.entry, config.exit)
 
@@ -319,13 +376,20 @@ def main() -> None:
                         rotate, path if show_path else None)
         
         if choice == "4":
-            if config.animation_wg:
-                config.animation_wg = False
-            elif not config.animation_wg:
-                config.animation_wg = True
+            if config.animation_dig:
+                config.animation_dig = False
+            elif not config.animation_dig:
+                config.animation_dig = True
             print("\n" * 2)
 
         if choice == "5":
+            if config.animation_path:
+                config.animation_path = False
+            elif not config.animation_path:
+                config.animation_path = True
+            print("\n" * 2)
+
+        if choice == "6":
             print("Good Bye!")
             return
 
