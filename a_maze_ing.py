@@ -117,11 +117,11 @@ def render_maze(grid: List[List[int]], width: int, height: int,
     if not rotate:
         RESET = "\033[00m"
         BG_WALL = "\033[45m"       # Magenta
-        BG_EMPTY = "\033[107m"      # Blanc
-        BG_PATH = "\033[42m"       # Vert
-        BG_ENTRY = "\033[104m"      # Bleu
-        BG_EXIT = "\033[41m"       # Rouge
-        BG_42 = "\033[48;5;93m"  # Violet (Code couleur étendu)
+        BG_EMPTY = "\033[107m"      # White
+        BG_PATH = "\033[42m"       # Green
+        BG_ENTRY = "\033[104m"      # Blue
+        BG_EXIT = "\033[41m"       # Red
+        BG_42 = "\033[48;5;93m"  # Purple
 
         BLK_WALL = f"{BG_WALL}  {RESET}"
         BLK_EMPTY = f"{BG_EMPTY}  {RESET}"
@@ -151,7 +151,7 @@ def render_maze(grid: List[List[int]], width: int, height: int,
         path_set.add(exit)
 
     print(f"\nDimensions: {width}x{height}, seed: {seed_value}")
-    # Bordure du haut
+    # Up border
     print(BLK_WALL + (BLK_WALL * 2) * width)
 
     for y in range(height):
@@ -162,7 +162,7 @@ def render_maze(grid: List[List[int]], width: int, height: int,
             val = grid[y][x]
             is_42 = (val == 15)
 
-            # 1. COULEUR DU BLOC CENTRAL
+            # Central Bloc
             if (x, y) == entry:
                 center_color = BLK_ENTRY
             elif (x, y) == exit:
@@ -176,35 +176,31 @@ def render_maze(grid: List[List[int]], width: int, height: int,
 
             line_body += center_color
 
-            # 2. LIAISON EST (Droite)
-            if (val & 2) != 0:  # Mur fermé
+            # Right
+            if (val & 2) != 0:
                 if is_42:
-                    line_body += BLK_42  # Mur violet pour le 42
+                    line_body += BLK_42  # If 42 purple
                 else:
                     line_body += BLK_WALL
-            else:  # Mur ouvert
-                # Logique simple : Si les deux sont sur le chemin = VERT
-                # Pas de bavure bleue ou rouge
+            else:  # Open wall
+                # If in path green
                 if (x, y) in path_set and (x + 1, y) in path_set:
                     line_body += BLK_PATH
                 else:
                     line_body += BLK_EMPTY
 
-            # 3. LIAISON SUD (Bas)
-            if (val & 4) != 0:  # Mur fermé
+            # South
+            if (val & 4) != 0:
                 if is_42:
-                    line_bottom += BLK_42  # Mur violet pour le 42
+                    line_bottom += BLK_42
                 else:
                     line_bottom += BLK_WALL
-            else:  # Mur ouvert
-                # Logique simple : Si les deux sont sur le chemin = VERT
+            else:
                 if (x, y) in path_set and (x, y + 1) in path_set:
                     line_bottom += BLK_PATH
                 else:
                     line_bottom += BLK_EMPTY
 
-            # 4. COIN
-            # Coin violet si on est dans le 42 pour un aspect "bloc"
             if is_42:
                 line_bottom += BLK_42
             else:
@@ -254,12 +250,12 @@ def main() -> None:
         print("3. Rotate maze colors")
         print("4. Quit")
         try:
-            choice = int(input("Choice (1-4): "))
+            choice = (input("Choice (1-4): "))
         except Exception:
             print("Error: invalid input.")
             continue
 
-        if choice == 1:
+        if choice == "1":
             if config.seed is not None:
                 random.seed(config.seed)
             else:
@@ -274,7 +270,7 @@ def main() -> None:
             print(f"Saving to {config.output_file}...\n")
             maze.save_maze(config.output_file, path, config.entry, config.exit)
 
-        if choice == 2:
+        if choice == "2":
             if show_path:
                 show_path = False
             elif not show_path:
@@ -283,7 +279,7 @@ def main() -> None:
                         config.entry, config.exit, seed_value,
                         rotate, path if show_path else None)
 
-        if choice == 3:
+        if choice == "3":
             if rotate:
                 rotate = False
             elif not rotate:
@@ -292,7 +288,7 @@ def main() -> None:
                         config.entry, config.exit, seed_value,
                         rotate, path if show_path else None)
 
-        if choice == 4:
+        if choice == "4":
             return
 
 

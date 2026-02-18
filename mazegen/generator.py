@@ -172,7 +172,7 @@ class MazeGenerator:
 
                 f.write(f"\n{entry[0]},{entry[1]}\n")
                 f.write(f"{exit[0]},{exit[1]}\n")
-                f.write(path_str)
+                f.write(path_str + "\n")
         except Exception as e:
             print(f"Writing error : {e}")
 
