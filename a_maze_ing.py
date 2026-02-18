@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from dataclasses import dataclass
 from typing import Tuple, Optional, List, Dict, Any
 from mazegen.generator import MazeGenerator
@@ -16,6 +17,7 @@ class Config:
     perfect: bool
     output_file: str
     seed: Optional[str] = None
+    animation_wg: Optional[bool] = False
 
 
 def parse_config(file_name: str) -> Config:
@@ -98,8 +100,11 @@ def convert(data: Dict[str, str]) -> Config:
         perfect = data["PERFECT"].lower() == "true"
         output_file = data["OUTPUT_FILE"]
         seed = data.get("SEED")
+        animation_wg = data.get("ANIMATION_WG")
+        if animation_wg is not None:
+            animation_wg = animation_wg.lower() == "true"
         return Config(width, height, entry, exit_coord,
-                      perfect, output_file, seed)
+                      perfect, output_file, seed, animation_wg)
 
     except Exception as e:
         print(f"Error: {type(e).__name__} - {e}")
@@ -227,7 +232,16 @@ def main() -> None:
         seed_value = str(random.randint(0, 10000000000))
     random.seed(seed_value)
     maze = MazeGenerator(config.width, config.height)
-    maze.generate_maze(config.entry, config.exit, config.perfect)
+    if (config.animation_wg is True):
+        for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
+            render_maze(maze.grid, config.width, config.height,
+                    config.entry, config.exit, seed_value,
+                    rotate)
+            print("\033[H\033[J", end="")
+            time.sleep(0.01)
+    else:
+        maze.generate_maze(config.entry, config.exit, config.perfect)
+
     print(f"Saving to {config.output_file}...")
     path = maze.solve_maze(config.width, config.height,
                            config.entry, config.exit)
@@ -258,13 +272,22 @@ def main() -> None:
             else:
                 seed_value = str(random.randint(0, 10000000000))
                 random.seed(seed_value)
-            maze.generate_maze(config.entry, config.exit, config.perfect)
+                if (config.animation_wg is True):
+                    for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
+                        render_maze(maze.grid, config.width, config.height,
+                                config.entry, config.exit, seed_value,
+                                rotate)
+                        print("\033[H\033[J", end="")
+                        time.sleep(0.01)
+                else:
+                    maze.generate_maze(config.entry, config.exit, config.perfect)
+            print(f"Saving to {config.output_file}...")
             path = maze.solve_maze(config.width, config.height,
-                                   config.entry, config.exit)
+                                config.entry, config.exit)
             render_maze(maze.grid, config.width, config.height,
                         config.entry, config.exit, seed_value,
                         rotate, path if show_path else None)
-            print(f"Saving to {config.output_file}...\n")
+
             maze.save_maze(config.output_file, path, config.entry, config.exit)
 
         if choice == "2":

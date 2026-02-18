@@ -80,7 +80,7 @@ class MazeGenerator:
             self.grid[current_y][current_x] &= ~8  # Break west wall at current
             self.grid[next_y][next_x] &= ~2  # Break east wall at next position
 
-    def generate_maze(self, entry: Tuple[int, int], exit: Tuple[int, int],
+    def generate_maze_steps(self, entry: Tuple[int, int], exit: Tuple[int, int],
                       perfect: bool) -> None:
         # Algo Recursive Backtracker
         # Add the starting point to the visited area
@@ -125,6 +125,60 @@ class MazeGenerator:
                 # Add next to the path
                 self.path.append((next_x, next_y))
 
+                yield self.grid
+            else:
+                # No possibilities we go back
+                # As the current is visited the loop will choose another poss
+                self.path.pop()
+
+        # If the maze must not be perfect we break some wall
+        if not perfect:
+            self.imperfect()
+
+    def generate_maze(self, entry: Tuple[int, int], exit: Tuple[int, int],
+                      perfect: bool) -> None:
+        # Algo Recursive Backtracker
+        # Add the starting point to the visited area
+        self.grid = []
+        for y in range(self.height):
+            new_line = []
+            for x in range(self.width):
+                new_line.append(15)
+            self.grid.append(new_line)
+
+        self.visited = []
+        for y in range(self.height):
+            line_visited = []
+            for x in range(self.width):
+                line_visited.append(False)
+            self.visited.append(line_visited)
+
+        self.path = []
+
+        self.draw42(entry, exit)
+        start_x, start_y = entry
+        self.visited[start_y][start_x] = True
+        self.path.append((start_x, start_y))
+
+        while len(self.path) > 0:
+            # Get the current pos
+            # [-1] is the lastpositional arg
+            curr_x, curr_y = self.path[-1]
+
+            # Check that we did'nt visited the neighbors already
+            possibles = self.neighbors(curr_x, curr_y)
+
+            # One possibilitie exist at least
+            if len(possibles) > 0:
+                next_x, next_y = random.choice(possibles)
+
+                self.dig_path(curr_x, curr_y, next_x, next_y)
+
+                # Next is now visited
+                self.visited[next_y][next_x] = True
+
+                # Add next to the path
+                self.path.append((next_x, next_y))
             else:
                 # No possibilities we go back
                 # As the current is visited the loop will choose another poss
