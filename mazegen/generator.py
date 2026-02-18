@@ -4,7 +4,11 @@ from typing import List, Tuple, Set
 
 
 class MazeGenerator:
+    """
+    Handles the generation and resolution of mazes
+    """
     def __init__(self, width: int, height: int) -> None:
+        """Initialize the maze generator with dimensions and empty grids."""
         self.width = width
         self.height = height
         self.grid: List[List[int]] = []
@@ -26,6 +30,10 @@ class MazeGenerator:
             self.visited.append(line_visited)
 
     def neighbors(self, x: int, y: int) -> List[Tuple[int, int]]:
+        """
+        Find unvisited neighbors for the generation process
+        (Recursive Backtracker).
+        """
         possible: List[Tuple[int, int]] = []
 
         # North : (x, y - 1)
@@ -57,6 +65,11 @@ class MazeGenerator:
 
     def dig_path(self, current_x: int, current_y: int,
                  next_x: int, next_y: int) -> None:
+        """
+        Remove walls between the current cell and the next chosen cell.
+        Updates the binary bitmask of both cells.
+        """
+
         move_x = next_x - current_x
         move_y = next_y - current_y
 
@@ -82,7 +95,9 @@ class MazeGenerator:
 
     def generate_maze(self, entry: Tuple[int, int], exit: Tuple[int, int],
                       perfect: bool) -> None:
-        # Algo Recursive Backtracker
+        """
+        Generate a maze using the Recursive Backtracker algorithm.
+        """
         # Add the starting point to the visited area
         self.grid = []
         for y in range(self.height):
@@ -135,6 +150,10 @@ class MazeGenerator:
             self.imperfect()
 
     def path_to_cardinal(self, path: List[Tuple[int, int]]) -> str:
+        """
+        Convert a list of coordinates into a cardinal direction string
+        (N, S, E, W).
+        """
         if not path or len(path) < 2:
             return ""
 
@@ -155,7 +174,9 @@ class MazeGenerator:
 
     def save_maze(self, filename: str, path: List[Tuple[int, int]],
                   entry: Tuple[int, int], exit: Tuple[int, int]) -> None:
-
+        """
+        Save the maze grid and solution to a text file.
+        """
         try:
             with open(filename, "w") as f:
                 for row in self.grid:
@@ -177,9 +198,14 @@ class MazeGenerator:
             print(f"Writing error : {e}")
 
     def have_wall(self, x: int, y: int, direction: int) -> bool:
+        """Check if a wall exists at (x, y) in the specified direction."""
         return (self.grid[y][x] & direction) != 0
 
     def draw42(self, entry: Tuple[int, int], exit: Tuple[int, int]) -> None:
+        """
+        Draw a '42' pattern of walls in the center of the maze.
+        Checks if the maze is large enough and if entry/exit overlap.
+        """
 
         self.pattern = set()
         if self.height < 9 or self.width < 9:
@@ -224,6 +250,7 @@ class MazeGenerator:
             self.visited[wy][wx] = True
 
     def imperfect(self) -> None:
+        """Randomly remove internal walls to create loops in the maze."""
 
         # Arbitrary limit to wall breaking
         limit = (self.width * self.height) // 20
@@ -262,6 +289,10 @@ class MazeGenerator:
 
     def get_neighbors(self, width: int, height: int,
                       x: int, y: int) -> List[Tuple[int, int]]:
+        """
+        Find accessible neighbors (respecting walls)
+        for the solving process (BFS).
+        """
         possible: List[Tuple[int, int]] = []
 
         value = self.grid[y][x]
@@ -286,6 +317,9 @@ class MazeGenerator:
 
     def solve_maze(self, width: int, height: int, start: Tuple[int, int],
                    end: Tuple[int, int]) -> List[Tuple[int, int]]:
+        """
+        Find the shortest path using Breadth-First Search (BFS).
+        """
 
         map: List[List[int]] = []
         for y in range(height):

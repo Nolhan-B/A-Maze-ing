@@ -16,6 +16,7 @@ class Config:
     perfect: bool
     output_file: str
     seed: Optional[str] = None
+    animation: Oprinal[bool] = False
 
 
 def parse_config(file_name: str) -> Config:
@@ -51,6 +52,9 @@ def parse_config(file_name: str) -> Config:
 
 
 def convert(data: Dict[str, str]) -> Config:
+    """
+    Validate raw dictionary data and convert it into a typed Config object.
+    """
     mandatory = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "PERFECT", "OUTPUT_FILE"]
 
     for key in mandatory:
@@ -110,6 +114,9 @@ def render_maze(grid: List[List[int]], width: int, height: int,
                 entry: Tuple[int, int], exit: Tuple[int, int],
                 seed_value: str, rotate: bool,
                 path: Optional[List[Tuple[int, int]]] = None) -> None:
+    """
+    Render the maze in the terminal using ASCII characters and ANSI colors.
+    """
 
     if not rotate:
         RESET = "\033[00m"
