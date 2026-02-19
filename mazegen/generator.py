@@ -315,9 +315,9 @@ class MazeGenerator:
         # Arbitrary limit to wall breaking
         limit = (self.width * self.height) // 20
         count = 0
-        max_attempts = limit * 10 
+        max_attempts = limit * 10
         attempts = 0
-        
+
         east_wall = 2
         south_wall = 4
         west_wall = 8
