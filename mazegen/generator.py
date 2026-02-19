@@ -93,8 +93,12 @@ class MazeGenerator:
             self.grid[current_y][current_x] &= ~8  # Break west wall at current
             self.grid[next_y][next_x] &= ~2  # Break east wall at next position
 
-    def generate_maze_steps(self, entry: Tuple[int, int], exit: Tuple[int, int],
-                      perfect: bool) -> None:
+    def generate_maze_steps(
+        self,
+        entry: Tuple[int, int],
+        exit: Tuple[int, int],
+        perfect: bool
+    ) -> Generator[List[List[int]], None, None]:
         """
         Generate a maze using the Recursive Backtracker algorithm.
         With a generator to allow animation during rendering.
@@ -144,7 +148,8 @@ class MazeGenerator:
                 yield self.grid
             else:
                 # No possibilities we go back
-                # As the current is visited the loop will choose another poss
+                # As the current is visited the loop will choose
+                # another poss
                 self.path.pop()
 
         # If the maze must not be perfect we break some wall
@@ -310,13 +315,16 @@ class MazeGenerator:
         # Arbitrary limit to wall breaking
         limit = (self.width * self.height) // 20
         count = 0
-
+        max_attempts = limit * 10 
+        attempts = 0
+        
         east_wall = 2
         south_wall = 4
         west_wall = 8
         north_wall = 1
 
-        while count < limit:
+        while count < limit and attempts < max_attempts:
+            attempts += 1
             random_x = random.randint(1, self.width - 2)
             random_y = random.randint(1, self.height - 2)
             choice = random.randint(0, 1)
@@ -432,8 +440,8 @@ class MazeGenerator:
         return path[::-1]
 
     def solve_maze_steps(self, width: int, height: int, start: Tuple[int, int],
-                   end: Tuple[int, int]
-                   ) -> Generator[List[Tuple[int, int]], None, None]:
+                         end: Tuple[int, int]
+                         ) -> Generator[List[Tuple[int, int]], None, None]:
         """
         Find the shortest path using Breadth-First Search (BFS).
         """
@@ -495,4 +503,3 @@ class MazeGenerator:
 
         for i in range(1, len(final_path) + 1):
             yield final_path[:i]
-

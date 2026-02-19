@@ -104,14 +104,20 @@ def convert(data: Dict[str, str]) -> Config:
         perfect = data["PERFECT"].lower() == "true"
         output_file = data["OUTPUT_FILE"]
         seed = data.get("SEED")
-        animation_dig = data.get("ANIMATION_DIG")
-        if animation_dig is not None:
-            animation_dig = animation_dig.lower() == "true"
-        animation_path = data.get("ANIMATION_PATH")
-        if animation_path is not None:
-            animation_path = animation_path.lower() == "true"
+
+        raw_anim_dig = data.get("ANIMATION_DIG")
+        anim_dig_val = False
+        if raw_anim_dig is not None:
+            anim_dig_val = raw_anim_dig.lower() == "true"
+
+        raw_anim_path = data.get("ANIMATION_PATH")
+        anim_path_val = False
+        if raw_anim_path is not None:
+            anim_path_val = raw_anim_path.lower() == "true"
+
         return Config(width, height, entry, exit_coord,
-                      perfect, output_file, seed, animation_dig, animation_path)
+                      perfect, output_file, seed, anim_dig_val,
+                      anim_path_val)
 
     except Exception as e:
         print(f"Error: {type(e).__name__} - {e}")
@@ -243,10 +249,11 @@ def main() -> None:
     random.seed(seed_value)
     maze = MazeGenerator(config.width, config.height)
     if (config.animation_dig is True):
-        for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
+        for _ in maze.generate_maze_steps(config.entry, config.exit,
+                                          config.perfect):
             render_maze(maze.grid, config.width, config.height,
-                    config.entry, config.exit, seed_value,
-                    rotate)
+                        config.entry, config.exit, seed_value,
+                        rotate)
             print("\033[H\033[J", end="")
             time.sleep(0.01)
     else:
@@ -311,13 +318,14 @@ def main() -> None:
                 seed_value = user_seed
             else:
                 seed_value = str(random.randint(0, 10000000000))
-            
+
             random.seed(seed_value)
             if (config.animation_dig is True):
-                for _ in maze.generate_maze_steps(config.entry, config.exit, config.perfect):
+                for _ in maze.generate_maze_steps(config.entry, config.exit,
+                                                  config.perfect):
                     render_maze(maze.grid, config.width, config.height,
-                            config.entry, config.exit, seed_value,
-                            rotate)
+                                config.entry, config.exit, seed_value,
+                                rotate)
                     print("\033[H\033[J", end="")
                     time.sleep(0.01)
             else:
@@ -374,7 +382,7 @@ def main() -> None:
             render_maze(maze.grid, config.width, config.height,
                         config.entry, config.exit, seed_value,
                         rotate, path if show_path else None)
-        
+
         if choice == "4":
             if config.animation_dig:
                 config.animation_dig = False
