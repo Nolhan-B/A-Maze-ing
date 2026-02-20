@@ -1,5 +1,4 @@
 import random
-import sys
 from typing import List, Tuple, Set, Generator
 
 
@@ -350,8 +349,7 @@ class MazeGenerator:
                         self.grid[random_y + 1][random_x] &= ~north_wall
                         count += 1
 
-    def get_neighbors(self, width: int, height: int,
-                      x: int, y: int) -> List[Tuple[int, int]]:
+    def get_neighbors(self, x: int, y: int) -> List[Tuple[int, int]]:
         """
         Find accessible neighbors (respecting walls)
         for the solving process (BFS).
@@ -365,11 +363,11 @@ class MazeGenerator:
             possible.append((x, y - 1))
 
         # South
-        if y < height - 1 and (value & 4) == 0:
+        if y < self.height - 1 and (value & 4) == 0:
             possible.append((x, y + 1))
 
         # East
-        if x < width - 1 and (value & 2) == 0:
+        if x < self.width - 1 and (value & 2) == 0:
             possible.append((x + 1, y))
 
         # West
@@ -378,16 +376,16 @@ class MazeGenerator:
 
         return possible
 
-    def solve_maze(self, width: int, height: int, start: Tuple[int, int],
+    def solve_maze(self, start: Tuple[int, int],
                    end: Tuple[int, int]) -> List[Tuple[int, int]]:
         """
         Find the shortest path using Breadth-First Search (BFS).
         """
 
         map: List[List[int]] = []
-        for y in range(height):
+        for y in range(self.height):
             line: List[int] = []
-            for x in range(width):
+            for x in range(self.width):
                 line.append(-1)
             map.append(line)
 
@@ -404,7 +402,7 @@ class MazeGenerator:
                 resolved = True
                 break
 
-            neighbors = self.get_neighbors(width, height, cx, cy)
+            neighbors = self.get_neighbors(cx, cy)
             for x, y in neighbors:
                 # -1 == not visited
                 if map[y][x] == -1:
@@ -412,7 +410,7 @@ class MazeGenerator:
                     queue.append((x, y))
         if not resolved:
             print("No solution found")
-            sys.exit(1)
+            return []
 
         # We found the exit, now we need to find the shortest path
 
@@ -423,7 +421,7 @@ class MazeGenerator:
         dist = map[cy][cx]
 
         while dist > 0:
-            neighbors = self.get_neighbors(width, height, cx, cy)
+            neighbors = self.get_neighbors(cx, cy)
             found = False
             for x, y in neighbors:
                 if map[y][x] == dist - 1:
@@ -439,7 +437,7 @@ class MazeGenerator:
         # We inverse the path
         return path[::-1]
 
-    def solve_maze_steps(self, width: int, height: int, start: Tuple[int, int],
+    def solve_maze_steps(self, start: Tuple[int, int],
                          end: Tuple[int, int]
                          ) -> Generator[List[Tuple[int, int]], None, None]:
         """
@@ -447,9 +445,9 @@ class MazeGenerator:
         """
 
         map: List[List[int]] = []
-        for y in range(height):
+        for y in range(self.height):
             line: List[int] = []
-            for x in range(width):
+            for x in range(self.width):
                 line.append(-1)
             map.append(line)
 
@@ -466,7 +464,7 @@ class MazeGenerator:
                 resolved = True
                 break
 
-            neighbors = self.get_neighbors(width, height, cx, cy)
+            neighbors = self.get_neighbors(cx, cy)
             for x, y in neighbors:
                 # -1 == not visited
                 if map[y][x] == -1:
@@ -474,7 +472,7 @@ class MazeGenerator:
                     queue.append((x, y))
         if not resolved:
             print("No solution found")
-            sys.exit(1)
+            return
 
         # We found the exit, now we need to find the shortest path
 
@@ -485,7 +483,7 @@ class MazeGenerator:
         dist = map[cy][cx]
 
         while dist > 0:
-            neighbors = self.get_neighbors(width, height, cx, cy)
+            neighbors = self.get_neighbors(cx, cy)
             found = False
             for x, y in neighbors:
                 if map[y][x] == dist - 1:

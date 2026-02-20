@@ -72,60 +72,84 @@ The core generation logic is encapsulated in the mazegen package located at the 
 
 ## Instructions
 
-Usage Example:
-Python
+### Usage Example:
 
-from mazegen.generator import MazeGenerator
+```python
+from mazegen import MazeGenerator
+```
 
-#### 1. Instantiate
+### 1. Instantiation
+Dimensions are defined once and stored within the object instance.  
+```python
 maze = MazeGenerator(width=20, height=20)
+```
 
-#### 2. Generate (Start at 0,0, End at 19,19, Perfect maze)
-maze.generate_maze(entry=(0, 0), exit=(19, 19), perfect=True)
+### 2. Generation
+```python
+generate_maze(entry, exit, perfect)
+``` 
+perfect=True -> generates a perfect maze with a single unique path (no loops).  
+```python
+maze.generate_maze(entry=(0, 0), exit=(19, 19), perfect=True)  
+```
 
-#### 3. Access structure
-print(maze.grid) 
+### 3. Resolution
+```python
+solve_maze(start, end)  
+```
+Finds the shortest path using Breadth-First Search (BFS).  
+Returns a list of coordinates: [(x1, y1), (x2, y2), ...]  
+```python
+path = maze.solve_maze(start=(0, 0), end=(19, 19))  
+```
+### 4. Access Internal Structure
+The grid is accessible as a 2D list of integers (bitwise representation of walls).
+```python
+print(maze.grid)
+```
 
-# 4. Solve
-path = maze.solve_maze(20, 20, (0, 0), (19, 19))
+### 5. Save the generated maze grid, coordinates, and solution to a text file.
+```python
+maze.save_maze(filename="output_maze.txt", path=path, entry=(0, 0), exit=(19, 19))
+```
 
-Features
+#### Features
 
-    "42" Pattern: A dedicated algorithm embeds a solid "42" wall structure in the center of the maze (if dimensions allow).
+"42" Pattern: A dedicated algorithm embeds a solid "42" wall structure in the center of the maze (if dimensions allow).
 
-    Custom Terminal Render: Colorized ASCII output handling walls, borders, and paths.
+Custom Terminal Render: Colorized ASCII output handling walls, borders, and paths.
 
-    Interactive Menu: Options to regenerate, toggle solution visibility, or rotate colors.
+Interactive Menu: Options to regenerate, toggle solution visibility, or rotate colors.
 
-Project Info
+#### Project Info
 
-    Author: nbarbosa, nbilyj
+##### Author: nbarbosa, nbilyj
 
-    nbarbosa: Parsing, maze algorythm, readme, Makefile.
-    nbilyj: Visualiser, package creation, refactoring, maze resolution.
-    Both members collaborated on all parts via pair-programming.
+nbarbosa: Parsing, maze algorithm, readme, Makefile.  
+nbilyj: Visualiser, package creation, refactoring, maze resolution.  
+Both members collaborated on all parts via pair-programming.
 
-    QA Tools: Flake8, MyPy (strict).
+QA Tools: Flake8, MyPy (strict).
 
-Development Phases:
+### Development Phases:
 
-    Data structure & Config parsing.
+Data structure & Config parsing.
 
-    MazeGenerator (Backtracker) & Solver (BFS).
+MazeGenerator (Backtracker) & Solver (BFS).
 
-    "42" pattern integration & Hex output compliance.
+"42" pattern integration & Hex output compliance.
 
-    Terminal Rendering of the maze.
+Terminal Rendering of the maze.
 
-    Refactoring into mazegen package & PEP8 cleanup.
+Refactoring into mazegen package & PEP8 cleanup.
 
-    Include docstrings to the code.
+Include docstrings to the code.
 
-Retrospective:
+### Retrospective:
 
-    What worked: The use of dataclasses for configuration simplified the code significantly.
+What worked: The use of dataclasses for configuration simplified the code significantly.
 
-    To improve: A GUI using MLX would have been a nice addition compared to the terminal render.
+To improve: A GUI using MLX would have been a nice addition compared to the terminal render.
 
 ## Resources
 
@@ -137,13 +161,12 @@ https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker
 
 https://discuss.python.org/t/maze-creation-in-python/77030/2
 
-AI Usage:
+### AI Usage:
 
+Debugging complex MyPy strict typing errors.
 
-    Debugging complex MyPy strict typing errors.
+Documentation & Layout: Assistance in structuring the README, formatting Markdown code blocks.
 
-    Documentation & Layout: Assistance in structuring the README, formatting Markdown code blocks.
+Generating ASCII assets.
 
-    Generating ASCII assets.
-
-Note: The core algorithmic logic was implemented manually.
+> Note: The core algorithmic logic was implemented manually.

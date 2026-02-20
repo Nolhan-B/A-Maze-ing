@@ -75,11 +75,15 @@ def convert(data: Dict[str, str]) -> Config:
             sys.exit(1)
 
         entry_parts = data["ENTRY"].split(",")
+        if len(entry_parts) != 2:
+            raise ValueError
         entry_x = int(entry_parts[0])
         entry_y = int(entry_parts[1])
         entry = (entry_x, entry_y)
 
         exit_parts = data["EXIT"].split(",")
+        if len(exit_parts) != 2:
+            raise ValueError
         exit_x = int(exit_parts[0])
         exit_y = int(exit_parts[1])
         exit_coord = (exit_x, exit_y)
@@ -101,19 +105,32 @@ def convert(data: Dict[str, str]) -> Config:
                   file=sys.stderr)
             sys.exit(1)
 
-        perfect = data["PERFECT"].lower() == "true"
+        raw_perfect = data["PERFECT"].lower()
+        if raw_perfect not in ["true", "false"]:
+            raise ValueError(f"PERFECT must be "
+                             f"'true' or 'false', got '{data['PERFECT']}'")
+        perfect = raw_perfect == "true"
+
         output_file = data["OUTPUT_FILE"]
         seed = data.get("SEED")
 
         raw_anim_dig = data.get("ANIMATION_DIG")
         anim_dig_val = False
         if raw_anim_dig is not None:
-            anim_dig_val = raw_anim_dig.lower() == "true"
+            raw_anim_dig_lower = raw_anim_dig.lower()
+            if raw_anim_dig_lower not in ["true", "false"]:
+                raise ValueError(f"ANIMATION_DIG must be "
+                                 f"'true' or 'false', got '{raw_anim_dig}'")
+            anim_dig_val = raw_anim_dig_lower == "true"
 
         raw_anim_path = data.get("ANIMATION_PATH")
         anim_path_val = False
         if raw_anim_path is not None:
-            anim_path_val = raw_anim_path.lower() == "true"
+            raw_anim_path_lower = raw_anim_path.lower()
+            if raw_anim_path_lower not in ["true", "false"]:
+                raise ValueError(f"ANIMATION_PATH must be "
+                                 f"'true' or 'false', got '{raw_anim_path}'")
+            anim_path_val = raw_anim_path_lower == "true"
 
         return Config(width, height, entry, exit_coord,
                       perfect, output_file, seed, anim_dig_val,
@@ -263,8 +280,6 @@ def main() -> None:
     if config.animation_path:
         path = []
         for step_path in maze.solve_maze_steps(
-            config.width,
-            config.height,
             config.entry,
             config.exit
         ):
@@ -283,8 +298,6 @@ def main() -> None:
             path = step_path
     else:
         path = maze.solve_maze(
-            config.width,
-            config.height,
             config.entry,
             config.exit
         )
@@ -334,8 +347,6 @@ def main() -> None:
             if config.animation_path:
                 path = []
                 for step_path in maze.solve_maze_steps(
-                    config.width,
-                    config.height,
                     config.entry,
                     config.exit
                 ):
@@ -354,8 +365,6 @@ def main() -> None:
                     path = step_path
             else:
                 path = maze.solve_maze(
-                    config.width,
-                    config.height,
                     config.entry,
                     config.exit
                 )
@@ -363,7 +372,7 @@ def main() -> None:
                         config.entry, config.exit, seed_value,
                         rotate, path if show_path else None)
 
-        maze.save_maze(config.output_file, path, config.entry, config.exit)
+            maze.save_maze(config.output_file, path, config.entry, config.exit)
 
         if choice == "2":
             if show_path:

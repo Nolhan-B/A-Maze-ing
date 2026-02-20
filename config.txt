@@ -1,4 +1,4 @@
-# Configuration du Labyrinthe
+# Maze configuration
 WIDTH=15
 HEIGHT=15
 ENTRY=1,0
@@ -6,5 +6,5 @@ EXIT=14,14
 PERFECT=True
 OUTPUT_FILE=output_maze.txt
 SEED=12
-ANIMATION_DIG=True
-ANIM_PATH=True
+ANIMATION_DIG=False
+ANIM_PATH=False
