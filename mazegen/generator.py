@@ -312,6 +312,9 @@ class MazeGenerator:
         """Randomly remove internal walls to create loops in the maze."""
 
         # Arbitrary limit to wall breaking
+        if self.width <= 2 or self.height <= 2:
+            print("Maze too small to be imperfect")
+            return
         limit = (self.width * self.height) // 20
         count = 0
         max_attempts = limit * 10

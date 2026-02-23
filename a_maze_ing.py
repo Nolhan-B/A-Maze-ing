@@ -112,6 +112,9 @@ def convert(data: Dict[str, str]) -> Config:
         perfect = raw_perfect == "true"
 
         output_file = data["OUTPUT_FILE"]
+        if not output_file:
+            print("No valid output file provided. Using default_output.txt")
+            output_file = "default_output.txt"
         seed = data.get("SEED")
 
         raw_anim_dig = data.get("ANIMATION_DIG")
@@ -123,12 +126,12 @@ def convert(data: Dict[str, str]) -> Config:
                                  f"'true' or 'false', got '{raw_anim_dig}'")
             anim_dig_val = raw_anim_dig_lower == "true"
 
-        raw_anim_path = data.get("ANIMATION_PATH")
+        raw_anim_path = data.get("ANIM_PATH")
         anim_path_val = False
         if raw_anim_path is not None:
             raw_anim_path_lower = raw_anim_path.lower()
             if raw_anim_path_lower not in ["true", "false"]:
-                raise ValueError(f"ANIMATION_PATH must be "
+                raise ValueError(f"ANIM_PATH must be "
                                  f"'true' or 'false', got '{raw_anim_path}'")
             anim_path_val = raw_anim_path_lower == "true"
 
@@ -325,7 +328,11 @@ def main() -> None:
             continue
 
         if choice == "1":
-            user_seed = input("Enter seed (Press Enter for random): ").strip()
+            try:
+                user_seed = input("Enter seed (Enter for random): ").strip()
+            except Exception:
+                print("\n")
+                continue
 
             if user_seed:
                 seed_value = user_seed
@@ -412,4 +419,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
